@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+
+# AI & Data
+weights/
+data/
+output/
+dataset/
+*.png
+*.jpg
+*.jpeg
+*.svg
+
+# Fonts
+*.ttf
+*.otf
+*.woff
+*.woff2
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
