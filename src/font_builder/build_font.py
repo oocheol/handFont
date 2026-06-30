@@ -155,8 +155,9 @@ def build_font_from_svgs(svg_dir, output_font_path, font_name="HandFont"):
     }
     fb.setupNameTable(name_strings)
     
-    # 표준 OS/2, hhea, head, post 테이블 구성 (가장 중요)
+    # 표준 OS/2, hhea, head, maxp, post 테이블 구성 (가장 중요)
     fb.setupHead(fontRevision=1.0)
+    fb.setupMaxp()
     fb.setupOS2(sTypoAscender=874, sTypoDescender=-150)
     fb.setupHorizontalHeader(ascent=874, descent=-150)
     fb.setupPost(italicAngle=0, underlinePosition=-75, underlineThickness=50)
