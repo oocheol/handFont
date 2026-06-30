@@ -9,7 +9,8 @@ TARGET_TEXTS = [
     "이새별이새별",     # 이미지 1 (공백 제거)
     "매실",             # 이미지 2
     "조영화",           # 이미지 3
-    "조영화"            # 이미지 4
+    "조영화",           # 이미지 4
+    "매실"              # 이미지 5
 ]
 
 def label_raw_images(raw_dir, output_style_dir):
