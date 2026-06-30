@@ -144,10 +144,7 @@ def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_d
         char_hex = f"{ord(char):04X}"
         out_path = os.path.join(output_dir, f"{char_hex}.png")
         
-        # 힌트로 사용자가 직접 쓴 손글씨 원본은 그대로 가져다 써서 정확도를 최대로 보장
-        if char in style_hints:
-            style_hints[char].save(out_path)
-            continue
+
             
         # 기본 뼈대 이미지 렌더링
         c_img = Image.new('RGB', (128, 128), color=(255, 255, 255))
