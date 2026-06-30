@@ -46,6 +46,14 @@ def label_raw_images(raw_dir, output_style_dir):
         # 이진화
         _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
         
+        # 가로선 및 세로선(테두리선) 감지 및 제거하여 글자 뭉침 방지
+        h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (60, 1))
+        v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 60))
+        detect_h = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, h_kernel, iterations=2)
+        detect_v = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, v_kernel, iterations=2)
+        thresh = cv2.subtract(thresh, detect_h)
+        thresh = cv2.subtract(thresh, detect_v)
+        
         # 연결 성분
         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(thresh)
         
@@ -61,11 +69,23 @@ def label_raw_images(raw_dir, output_style_dir):
             area = stats[i, cv2.CC_STAT_AREA]
             
             # 노이즈 필터링
-            if area < 100 or width > w * 0.95 or height > h * 0.95:
-                continue
-            if x <= border_margin or y <= border_margin or (x + width) >= (w - border_margin) or (y + height) >= (h - border_margin):
+            if area < 120 or width > w * 0.95 or height > h * 0.95:
                 continue
                 
+            # 이미지 가로/세로 외곽 경계선 근처(5% 이내)에 있는 작은 찌꺼기 성분 제거
+            if (x < w * 0.08 or (x + width) > w * 0.82) and area < 1500:
+                continue
+                
+            # C. 외곽 경계선에 닿아 있는 성분 제거 (상자 테두리선 필터링)
+            is_touching_border = (x <= border_margin or y <= border_margin or 
+                                  (x + width) >= (w - border_margin) or 
+                                  (y + height) >= (h - border_margin))
+            if is_touching_border:
+                # 테두리선처럼 아주 길고 얇거나 면적이 극단적으로 크면 지움
+                aspect_ratio = width / float(height)
+                if aspect_ratio > 3.0 or aspect_ratio < 0.33 or area > (w * h * 0.15):
+                    continue
+            
             candidates.append((x, y, width, height, i))
             
         # 목표 글자 수에 맞추기 위해 면적(Area)이 큰 상위 N개 후보군을 먼저 정렬
