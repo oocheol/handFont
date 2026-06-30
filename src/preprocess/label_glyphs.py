@@ -151,7 +151,7 @@ def label_raw_images_with_craft(raw_dir, output_style_dir):
             for idx, target_char in enumerate(combined_text):
                 cx1 = int(all_xmin + idx * char_w)
                 cx2 = int(all_xmin + (idx + 1) * char_w)
-                save_char_glyph(thresh, cx1, cx2, all_ymin, all_ymax, target_char, output_style_dir)
+                save_char_glyph(gray, thresh, cx1, cx2, all_ymin, all_ymax, target_char, output_style_dir)
                 
         else:
             # 박스 수가 충분하거나 단어 수와 같을 때, 각 단어 박스를 해당 단어 글자 수만큼 등분
@@ -165,13 +165,14 @@ def label_raw_images_with_craft(raw_dir, output_style_dir):
                 for idx, target_char in enumerate(target_word):
                     cx1 = int(xmin + idx * char_w)
                     cx2 = int(xmin + (idx + 1) * char_w)
-                    save_char_glyph(thresh, cx1, cx2, ymin, ymax, target_char, output_style_dir)
+                    save_char_glyph(gray, thresh, cx1, cx2, ymin, ymax, target_char, output_style_dir)
 
     print("\n[성공] CRAFT 기반 10글자 고품질 전처리 완료!")
 
-def save_char_glyph(thresh, x1, x2, y1, y2, target_char, output_style_dir):
+def save_char_glyph(gray, thresh, x1, x2, y1, y2, target_char, output_style_dir):
     h, w = thresh.shape
-    pad = int(max(x2-x1, y2-y1) * 0.15)
+    # 여백 비율을 20%로 넓혀 끝부분 획 잘림 방지
+    pad = int(max(x2-x1, y2-y1) * 0.20)
     
     cx1 = max(0, x1 - pad)
     cy1 = max(0, y1 - pad)
@@ -180,13 +181,13 @@ def save_char_glyph(thresh, x1, x2, y1, y2, target_char, output_style_dir):
     
     glyph_crop = thresh[cy1:cy2, cx1:cx2]
     
-    # 노이즈를 지우고 순수 자소만 남김
+    # 노이즈 지우기: 얇은 손글씨의 작은 점 성분 유실 방지를 위해 면적 기준을 4로 하향
     num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(glyph_crop)
     cleaned_glyph = np.zeros_like(glyph_crop)
     if num_labels > 1:
         for l in range(1, num_labels):
             area = stats[l, cv2.CC_STAT_AREA]
-            if area > 15:
+            if area > 4:
                 cleaned_glyph[labels == l] = 255
     else:
         cleaned_glyph = glyph_crop
@@ -199,8 +200,14 @@ def save_char_glyph(thresh, x1, x2, y1, y2, target_char, output_style_dir):
     dx = (max_dim - gw) // 2
     square_glyph[dy:dy+gh, dx:dx+gw] = cleaned_glyph
     
+    # LANCZOS 리사이즈 진행
     resized = cv2.resize(square_glyph, (128, 128), interpolation=cv2.INTER_LANCZOS4)
-    final_img = cv2.bitwise_not(resized)
+    
+    # 경계선을 매우 부드럽게(Anti-aliasing) 가공하여 계단현상 제거 (벡터 품질 향상)
+    smoothed = cv2.GaussianBlur(resized, (3, 3), 0)
+    _, final_thresh = cv2.threshold(smoothed, 100, 255, cv2.THRESH_BINARY)
+    
+    final_img = cv2.bitwise_not(final_thresh)
     
     unicode_hex = f"{ord(target_char):04X}"
     output_name = f"{unicode_hex}.png"
