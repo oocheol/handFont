@@ -45,6 +45,10 @@ def build_font_from_svgs(svg_dir, output_font_path, font_name="HandFont"):
             # SVG 불러오기
             glyph.importOutlines(svg_path)
             
+            # 외곽선 방향 보정 및 겹침 제거 (ㅁ, ㅇ 등 내부 구멍 뚫림 완벽 보장)
+            glyph.correctDirection()
+            glyph.removeOverlap()
+            
             # 고정 너비 지정 (Monospace)
             glyph.width = 1024
             success_count += 1

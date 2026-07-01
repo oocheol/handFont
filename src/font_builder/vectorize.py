@@ -15,36 +15,40 @@ def png_to_svg_pure_python(png_path, svg_path):
             
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         
-        # 2. 이진화 (글씨가 255(흰색), 배경이 0(검은색)이 되도록 처리)
-        # OpenCV findContours는 흰색 성분의 외곽선을 탐색하므로 글자가 흰색이어야 합니다.
+        # 2. 이진화
         _, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY_INV)
         
-        # 3. 외곽선 찾기
-        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
+        # 3. 외곽선 찾기 (RETR_CCOMP를 사용하여 내부 구멍(Holes)까지 모두 검출)
+        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
         
         # 4. SVG 패스 데이터 생성
-        svg_paths = []
-        for cnt in contours:
-            if len(cnt) < 3:
-                continue
+        path_segments = []
+        if hierarchy is not None:
+            for cnt in contours:
+                if len(cnt) < 3:
+                    continue
+                    
+                segment = []
+                for i, pt in enumerate(cnt):
+                    x, y = pt[0][0], pt[0][1]
+                    if i == 0:
+                        segment.append(f"M {x} {y}")
+                    else:
+                        segment.append(f"L {x} {y}")
+                segment.append("Z")
+                path_segments.append(" ".join(segment))
                 
-            path_data = []
-            for i, pt in enumerate(cnt):
-                x, y = pt[0][0], pt[0][1]
-                if i == 0:
-                    path_data.append(f"M {x} {y}")
-                else:
-                    path_data.append(f"L {x} {y}")
-            path_data.append("Z")
-            svg_paths.append(" ".join(path_data))
+        if not path_segments:
+            return False
             
-        # 5. SVG 파일 쓰기
+        full_path_d = " ".join(path_segments)
+            
+        # 5. SVG 파일 쓰기 (fill-rule="evenodd" 속성을 지정하여 내부 구멍이 뚫리도록 보장)
         h, w = gray.shape
         with open(svg_path, 'w', encoding='utf-8') as f:
             f.write(f'<?xml version="1.0" encoding="utf-8"?>\n')
             f.write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}">\n')
-            for path in svg_paths:
-                f.write(f'  <path d="{path}" fill="black" stroke="none" />\n')
+            f.write(f'  <path d="{full_path_d}" fill="black" fill-rule="evenodd" stroke="none" />\n')
             f.write('</svg>\n')
             
         return True
