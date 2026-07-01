@@ -35,7 +35,9 @@ def reprocess_user_labeled_images(raw_dir="data/raw", output_style_dir="data/sty
     print(f"-> 파싱된 고유 한글 자소 수: {len(char_groups)}개 ({list(char_groups.keys())})")
 
     for char_label, paths in char_groups.items():
-        unicode_hex = f"{ord(char_label):04X}"
+        # 'ㅏ' 모음만 단독으로 들어온 경우 완성형 '아' 로 매핑하여 모델에 힌트 제공
+        target_char = '아' if char_label == 'ㅏ' else char_label
+        unicode_hex = f"{ord(target_char):04X}"
         output_name = f"{unicode_hex}.png"
         out_path = os.path.join(output_style_dir, output_name)
         
@@ -104,6 +106,8 @@ def reprocess_user_labeled_images(raw_dir="data/raw", output_style_dir="data/sty
         
         cv2.imwrite(out_path, final_img)
         print(f"   -> 글자 '{char_label}' 정밀 추출 및 저장 완료: {output_name} (스캔본 {len(paths)}개 병합)")
+
+
 
     print("[성공] 사용자 직접 크롭본 기반 10글자 고도화 전처리 완료!")
     return True
