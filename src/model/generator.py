@@ -179,10 +179,13 @@ def get_optimal_style_images(char, style_hints):
         if '나' in style_hints: secondary.append(style_hints['나'])
     
     # ㅓ/ㅕ: 왼쪽 가로획
+    # '어' 힌트가 없을 경우 '아'로 대체:
+    # ㅏ와 ㅓ는 동일한 [세로획+가로단획] 구조이며, 방향은 Content Image에서 결정됨
+    # '이'(ㅣ 구조)를 primary로 쓰면 가로획 신호가 완전히 소실되므로 반드시 '아' 사용
     elif jung_idx in JUNG_EO_GROUP:
         if '어' in style_hints: primary.append(style_hints['어'])
-        if '이' in style_hints: secondary.append(style_hints['이'])
-        if '아' in style_hints: secondary.append(style_hints['아'])
+        if '아' in style_hints: primary.append(style_hints['아'])   # ㅓ ≈ 미러된 ㅏ 구조
+        if '화' in style_hints: secondary.append(style_hints['화']) # ㅘ도 ㅏ 성분 포함
     
     # ㅐ/ㅔ 계열: 세로 2획 구조
     elif jung_idx in JUNG_E_GROUP:
@@ -364,12 +367,18 @@ def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_d
             out_img = output_tensor[0]
             out_np = np.array(out_img.convert('L'))
         
-        # 화질 강화 및 경계선 정리
-        _, final_thresh = cv2.threshold(out_np, 127, 255, cv2.THRESH_BINARY)
+        # ━━━ 후처리 파이프라인 (획 끊김 방지 최적화) ━━━
+        # 1. Gaussian blur를 이진화 이전에 적용 → 픽셀 전환 경계를 부드럽게
+        #    (이진화 후 blur는 오히려 획을 흐리고 재이진화 시 끊김 유발)
+        blurred = cv2.GaussianBlur(out_np, (3, 3), 0.8)
         
-        # 앤티앨리어싱 스무딩
-        smoothed = cv2.GaussianBlur(final_thresh, (3, 3), 0)
-        _, final_img = cv2.threshold(smoothed, 110, 255, cv2.THRESH_BINARY)
+        # 2. Otsu 자동 임계값으로 단일 이진화 (수동 127 고정값보다 안정적)
+        _, binary = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        
+        # 3. Morphological closing: 끊긴 획 사이의 미세 단절 연결
+        #    (kernel 3x1 세로 우선: 한글 세로획 끊김에 특화)
+        close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+        final_img = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, close_kernel)
         
         cv2.imwrite(out_path, final_img)
         
