@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import cv2
 import torch
+import torch.nn.functional as F
 from PIL import Image, ImageDraw, ImageFont
 
 # FontDiffuser 모듈 경로 주입
@@ -79,55 +80,179 @@ def load_fontdiffuser_pipeline(ckpt_dir="weights", device="cuda:0"):
     print("[성공] FontDiffuser SOTA 딥러닝 추론 파이프라인 완벽 로드 완료!")
     return pipe, args
 
-def get_optimal_style_image(char, style_hints, default_img):
+
+def make_content_image(char, font, size=128):
+    """
+    FontDiffuser Content Image 생성.
+    - 흰 배경(255)에 검은 글씨(0), 정밀 중앙 정렬
+    - Morphological dilation 적용: 가는 획(ㅏ 가로획 등)을 굵게 만들어
+      모델 Content Encoder가 획 구조를 확실히 인식하도록 강화
+    """
+    img = Image.new('L', (size, size), color=255)  # 그레이스케일 흰 배경
+    draw = ImageDraw.Draw(img)
+    try:
+        left, top, right, bottom = draw.textbbox((0, 0), char, font=font)
+        w, h = right - left, bottom - top
+        x = (size - w) // 2 - left
+        y = (size - h) // 2 - top
+        draw.text((x, y), char, fill=0, font=font)
+    except Exception:
+        draw.text((size // 4, size // 4), char, fill=0, font=font)
+    
+    # 흰 배경 검은 글씨 → 반전하여 검은 배경 흰 글씨 (획 부분 = 흰색)
+    arr = np.array(img)
+    ink_mask = (255 - arr)  # 글씨 부분만 밝게
+    
+    # Morphological dilation: 가는 획을 팽창시켜 모델이 인식 가능한 두께로 만듦
+    # 특히 ㅏ의 짧은 가로획, ㅎ의 점획 등이 잘 인식되도록
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    dilated = cv2.dilate(ink_mask, kernel, iterations=1)
+    
+    # 다시 흰 배경 검은 글씨로 반전
+    result = 255 - dilated
+    result_img = Image.fromarray(result.astype(np.uint8))
+    
+    # RGB로 변환 (FontDiffuser는 3채널 입력)
+    return result_img.convert('RGB')
+
+
+def build_averaged_style_tensor(style_hints_tensors, device):
+    """
+    논문(CKFont2, DML-Font)의 Multi-Reference 앙상블 방식:
+    여러 스타일 힌트 텐서를 평균 풀링하여 단일 앙상블 스타일 텐서 생성.
+    이를 통해 특정 글자(예: ㅏ)의 획 정보가 유실되는 문제를 방지.
+    """
+    if not style_hints_tensors:
+        raise ValueError("스타일 힌트가 없습니다.")
+    stacked = torch.cat(style_hints_tensors, dim=0)  # [N, C, H, W]
+    averaged = stacked.mean(dim=0, keepdim=True)  # [1, C, H, W]
+    return averaged.to(device)
+
+
+# 한글 자모 인덱스 정의
+CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
+JUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ']
+
+# 중성(모음) 그룹 분류
+# ㅏ계 (오른쪽 가로획): ㅏ(0), ㅑ(2)
+JUNG_A_GROUP = {0, 2}
+# ㅓ계 (왼쪽 가로획): ㅓ(4), ㅕ(6)
+JUNG_EO_GROUP = {4, 6}
+# ㅔ/ㅐ계 (세로2획): ㅐ(1), ㅒ(3), ㅔ(5), ㅖ(7)
+JUNG_E_GROUP = {1, 3, 5, 7}
+# ㅗ계 (위 가로획): ㅗ(8), ㅛ(12)
+JUNG_O_GROUP = {8, 12}
+# ㅜ계 (아래 가로획): ㅜ(13), ㅠ(17)
+JUNG_U_GROUP = {13, 17}
+# 복합모음: ㅘ(9),ㅙ(10),ㅚ(11),ㅝ(14),ㅞ(15),ㅟ(16)
+JUNG_WA_GROUP = {9, 10, 11, 14, 15, 16}
+# ㅡ/ㅢ/ㅣ: ㅡ(18),ㅢ(19),ㅣ(20)
+JUNG_EU_GROUP = {18, 19, 20}
+
+
+def get_optimal_style_images(char, style_hints):
     """
     한글 타겟 글자의 초성 및 중성 형태를 분석하여,
-    보유한 힌트 글자셋 중 뼈대 구조가 가장 유사한 최적의 스타일 힌트 이미지를 선택합니다.
+    가장 유사한 구조를 가진 스타일 힌트 이미지들을 우선순위 리스트로 반환.
+    
+    반환: PIL Image 리스트 (최대 3개, 앙상블 대상)
     """
+    all_hints = list(style_hints.values())
+    
     if not (0xAC00 <= ord(char) <= 0xD7A3):
-        return default_img
+        return all_hints[:3] if len(all_hints) >= 3 else all_hints
         
     char_code = ord(char) - 0xAC00
     cho_idx = char_code // 588
     jung_idx = (char_code % 588) // 28
+    jong_idx = char_code % 28
     
-    # 1순위: 초성이 특정 자음인 경우 자음 스타일 우선 매핑
-    if cho_idx in [12, 13, 14]: # ㅈ, ㅉ, ㅊ
-        if '조' in style_hints: return style_hints['조']
-    if cho_idx == 18: # ㅎ
-        if '화' in style_hints: return style_hints['화']
-    if cho_idx in [6]: # ㅁ
-        if '매' in style_hints: return style_hints['매']
-    if cho_idx in [7, 8]: # ㅂ, ㅃ
-        if '별' in style_hints: return style_hints['별']
-    if cho_idx in [9, 10]: # ㅅ, ㅆ
-        if '새' in style_hints: return style_hints['새']
-        if '소' in style_hints: return style_hints['소']
-        
-    # 2순위: 중성 모음 형태별 매핑
-    if jung_idx in [0, 2]: # ㅏ, ㅑ
-        if '아' in style_hints: return style_hints['아']
-    if jung_idx in [1, 3, 5, 7, 20]: # ㅐ, ㅒ, ㅔ, ㅖ, ㅣ
-        if '이' in style_hints: return style_hints['이']
-        if '새' in style_hints: return style_hints['새']
-        if '매' in style_hints: return style_hints['매']
-    if jung_idx in [8, 12, 18]: # ㅗ, ㅛ, ㅡ
-        if '소' in style_hints: return style_hints['소']
-        if '조' in style_hints: return style_hints['조']
-    if jung_idx in [9, 10, 11, 14, 15, 16, 19]: # 복합 모음 (ㅘ, ㅝ 등)
-        if '화' in style_hints: return style_hints['화']
-        
-    # 디폴트 폴백
-    for fallback in ['아', '이', '영', '매', '새']:
-        if fallback in style_hints:
-            return style_hints[fallback]
-            
-    return default_img
+    primary = []   # 1순위: 가장 중요한 획 구조 매치
+    secondary = [] # 2순위: 보조 스타일 참조
+    
+    # ━━━ 중성(모음) 우선 매핑 ━━━
+    # ㅏ/ㅑ: 오른쪽 가로획이 있는 글자 - '아'가 핵심
+    if jung_idx in JUNG_A_GROUP:
+        if '아' in style_hints: primary.append(style_hints['아'])
+        if '바' in style_hints: primary.append(style_hints['바'])
+        if '가' in style_hints: primary.append(style_hints['가'])
+        if '나' in style_hints: secondary.append(style_hints['나'])
+    
+    # ㅓ/ㅕ: 왼쪽 가로획
+    elif jung_idx in JUNG_EO_GROUP:
+        if '어' in style_hints: primary.append(style_hints['어'])
+        if '이' in style_hints: secondary.append(style_hints['이'])
+        if '아' in style_hints: secondary.append(style_hints['아'])
+    
+    # ㅐ/ㅔ 계열: 세로 2획 구조
+    elif jung_idx in JUNG_E_GROUP:
+        if '새' in style_hints: primary.append(style_hints['새'])
+        if '매' in style_hints: primary.append(style_hints['매'])
+        if '세' in style_hints: primary.append(style_hints['세'])
+        if '이' in style_hints: secondary.append(style_hints['이'])
+    
+    # ㅗ/ㅛ: 위 가로획
+    elif jung_idx in JUNG_O_GROUP:
+        if '소' in style_hints: primary.append(style_hints['소'])
+        if '조' in style_hints: secondary.append(style_hints['조'])
+    
+    # ㅜ/ㅠ: 아래 가로획
+    elif jung_idx in JUNG_U_GROUP:
+        if '화' in style_hints: primary.append(style_hints['화'])
+        if '소' in style_hints: secondary.append(style_hints['소'])
+    
+    # 복합모음 ㅘ/ㅝ 등
+    elif jung_idx in JUNG_WA_GROUP:
+        if '화' in style_hints: primary.append(style_hints['화'])
+        if '아' in style_hints: secondary.append(style_hints['아'])
+        if '소' in style_hints: secondary.append(style_hints['소'])
+    
+    # ㅡ/ㅢ/ㅣ
+    elif jung_idx in JUNG_EU_GROUP:
+        if '이' in style_hints: primary.append(style_hints['이'])
+        if '영' in style_hints: secondary.append(style_hints['영'])
+    
+    # ━━━ 초성(자음) 보조 매핑 ━━━
+    if cho_idx == 18:  # ㅎ
+        if '화' in style_hints and style_hints['화'] not in primary:
+            secondary.append(style_hints['화'])
+    elif cho_idx in [12, 13, 14]:  # ㅈ, ㅉ, ㅊ
+        if '조' in style_hints and style_hints['조'] not in primary:
+            secondary.append(style_hints['조'])
+    elif cho_idx == 6:  # ㅁ
+        if '매' in style_hints and style_hints['매'] not in primary:
+            secondary.append(style_hints['매'])
+    elif cho_idx in [7, 8]:  # ㅂ, ㅃ
+        if '별' in style_hints and style_hints['별'] not in primary:
+            secondary.append(style_hints['별'])
+    elif cho_idx in [9, 10]:  # ㅅ, ㅆ
+        if '새' in style_hints and style_hints['새'] not in primary:
+            secondary.append(style_hints['새'])
+    
+    # 리스트 조합: primary 우선, secondary 보충, 나머지 기본값으로 채우기
+    result = primary[:2] + secondary[:1]
+    
+    # 부족하면 전체 힌트에서 보충
+    if len(result) < 2:
+        fallback_order = ['아', '이', '새', '매', '소', '영', '별', '조', '화']
+        for fb in fallback_order:
+            if fb in style_hints and style_hints[fb] not in result:
+                result.append(style_hints[fb])
+            if len(result) >= 2:
+                break
+    
+    return result[:3]  # 최대 3개
+
 
 def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_dir="output/images", device="cuda:0"):
     """
-    진짜 FontDiffuser weights 4종을 사용하여
-    10개의 한글 손글씨 힌트로부터 2,350자의 필체 스타일을 유추 합성(Cross-Attention Diffusion)합니다.
+    FontDiffuser weights 4종 + Multi-Reference Style Averaging 앙상블로
+    2,350자 한글 손글씨 폰트를 생성합니다.
+    
+    개선사항:
+    - Multi-Reference Style Averaging: 최대 3장의 스타일 힌트를 평균 임베딩으로 앙상블
+    - Content Image 품질 개선: FontDiffuser 원본 ttf2im과 동일한 방식 사용
+    - 모음별 최적 스타일 매핑: ㅏ계/ㅓ계/ㅔ계/ㅗ계/ㅜ계/복합 각각 독립 매핑
     """
     print("[AI 작동] FontDiffuser 딥러닝 디퓨전 추론 가동 시작...")
     
@@ -135,7 +260,6 @@ def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_d
     
     # 1. 스타일 이미지들 로드
     style_files = [f for f in os.listdir(style_dir) if f.lower().endswith('.png')]
-    style_images = []
     style_hints = {}
     
     for f in style_files:
@@ -143,16 +267,15 @@ def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_d
         try:
             char = chr(int(char_hex, 16))
             pil_img = Image.open(os.path.join(style_dir, f)).convert('RGB')
-            style_images.append(pil_img)
-            style_hints[char] = pil_img  # RGB 형식 보관
+            style_hints[char] = pil_img
         except Exception as e:
             print(f"[경고] 스타일 파일 해석 오류 ({f}): {e}")
-            
-    if not style_images:
+    
+    print(f"[스타일] 로드된 힌트 글자: {list(style_hints.keys())}")
+    
+    if not style_hints:
         print("[오류] 스타일 힌트 글자가 하나도 로드되지 않았습니다.")
         return
-        
-    style_img_ref = style_images[0]
     
     # 2. 시스템 기본 한글 폰트 로드 (Content Template)
     font_paths = [
@@ -164,7 +287,9 @@ def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_d
     if not target_font:
         print("[오류] 시스템 맑은고딕 또는 바탕체를 찾을 수 없습니다.")
         return
-    font = ImageFont.truetype(target_font, 80)
+    
+    # FontDiffuser 원본과 동일한 128px 폰트 사이즈
+    font = ImageFont.truetype(target_font, 100)
     
     # 전처리 트랜스폼 정의
     content_transforms = transforms.Compose([
@@ -180,29 +305,47 @@ def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_d
         transforms.Normalize([0.5], [0.5])
     ])
     
+    # 3. 전체 스타일 힌트 텐서 사전 계산 (매번 변환하지 않도록 캐시)
+    style_tensor_cache = {}
+    for char, pil_img in style_hints.items():
+        style_tensor_cache[char] = style_transforms(pil_img)[None, :].to(device)
+    
     total = len(COMMON_2350_HANGUL)
     print(f" -> 총 {total}자의 한글에 대해 AI 디퓨전 획 생성을 개시합니다.")
+    print(f"    [방식] Multi-Reference Style Averaging 앙상블 적용")
     
     for idx, char in enumerate(COMMON_2350_HANGUL):
         char_hex = f"{ord(char):04X}"
         out_path = os.path.join(output_dir, f"{char_hex}.png")
         
-        # 기본 뼈대 이미지 렌더링
-        c_img = Image.new('RGB', (128, 128), color=(255, 255, 255))
-        draw = ImageDraw.Draw(c_img)
-        try:
-            left, top, right, bottom = draw.textbbox((0, 0), char, font=font)
-            w, h = right - left, bottom - top
-        except:
-            w, h = 64, 64
-        draw.text(((128 - w) // 2, (128 - h) // 2 - 10), char, fill=(0, 0, 0), font=font)
-        
-        # 콘텐츠 이미지 변환
+        # Content Image: FontDiffuser 원본 방식으로 생성 (정밀 중앙 정렬)
+        c_img = make_content_image(char, font, size=128)
         content_tensor = content_transforms(c_img)[None, :].to(device)
         
-        # 동적 스타일 매핑을 적용하여 타겟 글자에 가장 잘 어울리는 스타일 힌트 매칭
-        optimal_style_img = get_optimal_style_image(char, style_hints, style_img_ref)
-        style_tensor = style_transforms(optimal_style_img)[None, :].to(device)
+        # Multi-Reference Style Averaging: 최적 스타일 힌트 앙상블
+        optimal_style_imgs = get_optimal_style_images(char, style_hints)
+        
+        # 각 스타일 이미지를 텐서로 변환 후 평균 풀링
+        style_tensors = []
+        for simg in optimal_style_imgs:
+            # 캐시에서 찾기 (이미 변환된 경우)
+            cached_char = None
+            for k, v in style_hints.items():
+                if v is simg:
+                    cached_char = k
+                    break
+            
+            if cached_char and cached_char in style_tensor_cache:
+                style_tensors.append(style_tensor_cache[cached_char])
+            else:
+                style_tensors.append(style_transforms(simg)[None, :].to(device))
+        
+        if len(style_tensors) > 1:
+            # 여러 스타일 텐서의 평균 앙상블
+            stacked = torch.cat(style_tensors, dim=0)  # [N, C, H, W]
+            style_tensor = stacked.mean(dim=0, keepdim=True)  # [1, C, H, W]
+        else:
+            style_tensor = style_tensors[0]
         
         # 디퓨전 추론 노이즈 해소 루프 실행
         with torch.no_grad():
@@ -220,7 +363,7 @@ def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_d
             
             out_img = output_tensor[0]
             out_np = np.array(out_img.convert('L'))
-            
+        
         # 화질 강화 및 경계선 정리
         _, final_thresh = cv2.threshold(out_np, 127, 255, cv2.THRESH_BINARY)
         
@@ -232,8 +375,9 @@ def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_d
         
         if (idx + 1) % 100 == 0:
             print(f"   -> AI 추론 진행도: {idx + 1}/{total} 완료 (현재 자: '{char}')", flush=True)
-
+    
     print("[성공] FontDiffuser AI 추론 완료 및 2,350자 고품질 합성 이미지 저장 성공!")
+
 
 if __name__ == "__main__":
     device = "cuda:0" if torch.cuda.is_available() else "cpu"

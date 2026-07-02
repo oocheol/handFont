@@ -54,8 +54,12 @@ def reprocess_user_labeled_images(raw_dir="data/raw", output_style_dir="data/sty
             # 적응형 이진화 (조명 불균형 완벽 방어)
             thresh = cv2.adaptiveThreshold(
                 gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                cv2.THRESH_BINARY_INV, 81, 13
+                cv2.THRESH_BINARY_INV, 51, 8
             )
+            
+            # 획 두께 강화: 얼파이티티로 업서이즈된 획도 복원
+            dilate_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
+            thresh = cv2.dilate(thresh, dilate_kernel, iterations=1)
             
             # 획 구멍 메우기 (MORPH_CLOSE)
             close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
@@ -67,8 +71,8 @@ def reprocess_user_labeled_images(raw_dir="data/raw", output_style_dir="data/sty
             if num_labels > 1:
                 for l in range(1, num_labels):
                     area = stats[l, cv2.CC_STAT_AREA]
-                    # 자소 성분 보존을 위해 노이즈 필터링 완화 (area > 3)
-                    if area > 3:
+                    # area > 2 영세한 획도 보존 (ㅏ 가로획 유실 방지)
+                    if area > 2:
                         cleaned[labels == l] = 255
             else:
                 cleaned = thresh
