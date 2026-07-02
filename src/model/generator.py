@@ -350,9 +350,9 @@ def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_d
         else:
             style_tensor = style_tensors[0]
         
-        # 디퓨전 추론 노이즈 해소 루프 실행
+        # raw float tensor 직접 수신 [1, 3, 96, 96] 형태
         with torch.no_grad():
-            output_tensor = pipe.generate(
+            raw_tensor = pipe.generate(
                 content_images=content_tensor,
                 style_images=style_tensor,
                 batch_size=1,
@@ -361,24 +361,66 @@ def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_d
                 content_encoder_downsample_size=args.content_encoder_downsample_size,
                 t_start=args.t_start,
                 t_end=args.t_end,
-                dm_size=args.content_image_size
+                dm_size=args.content_image_size,
+                return_tensor=True  # float tensor 직접 반환
             )
-            
-            out_img = output_tensor[0]
-            out_np = np.array(out_img.convert('L'))
         
-        # ━━━ 후처리 파이프라인 (획 끊김 방지 최적화) ━━━
-        # 1. Gaussian blur를 이진화 이전에 적용 → 픽셀 전환 경계를 부드럽게
-        #    (이진화 후 blur는 오히려 획을 흐리고 재이진화 시 끊김 유발)
-        blurred = cv2.GaussianBlur(out_np, (3, 3), 0.8)
+        # ━━━ 고품질 후처리 파이프라인 ━━━
+        # raw tensor: [1, 3, H, W] float32 on GPU, 값 범위 [0, 1]
+        # 그레이스케일 변환 (R*0.299 + G*0.587 + B*0.114)
+        gray_tensor = (raw_tensor[0, 0] * 0.299 +
+                       raw_tensor[0, 1] * 0.587 +
+                       raw_tensor[0, 2] * 0.114)  # [H, W]
+        gray_np = (gray_tensor.cpu().numpy() * 255).astype(np.uint8)
         
-        # 2. Otsu 자동 임계값으로 단일 이진화 (수동 127 고정값보다 안정적)
-        _, binary = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        # Step 1: 4배 upscale (96→384) - float에서 upscale하므로 계단 없음
+        gray_pil = Image.fromarray(gray_np)
+        upscaled_pil = gray_pil.resize((384, 384), Image.BICUBIC)
+        upscaled = np.array(upscaled_pil)
         
-        # 3. Morphological closing: 끊긴 획 사이의 미세 단절 연결
-        #    (kernel 3x1 세로 우선: 한글 세로획 끊김에 특화)
-        close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-        final_img = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, close_kernel)
+        # Step 2: 획 경계 부드럽게
+        blurred = cv2.GaussianBlur(upscaled, (5, 5), 1.2)
+        
+        # Step 3: 엄격한 threshold (분포 분석 기반)
+        # 순수 코어 획: < 150 (3.8%)  현재220: 5.4% (42% 과잉)
+        # 175로 설정: 코어 + 최소 엣지만 캡처, 배경 노이즈 헤일로 제외
+        _, binary = cv2.threshold(blurred, 175, 255, cv2.THRESH_BINARY)
+        
+        # Step 4: 방향별 Closing - 축소된 5px 커널 사용
+        # (기존 9px: 노이즈를 주획과 연결시킴 → 5px: 실제 단절만 브리징)
+        vk = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 5))
+        closed_v = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, vk)
+        
+        hk = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 1))
+        closed_h = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, hk)
+        
+        ek = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+        closed_e = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, ek)
+        
+        # union: 어느 방향이든 연결된 획 보존 (0=ink 인코딩에서 AND=union)
+        combined = cv2.bitwise_and(closed_v, closed_h)
+        combined = cv2.bitwise_and(combined, closed_e)
+        
+        # Step 5: 큰 Opening으로 잔여 노이즈 점 제거
+        ok = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+        opened = cv2.morphologyEx(combined, cv2.MORPH_OPEN, ok)
+        
+        # Step 6: Connected Component 크기 필터링
+        # 고립된 소형 노이즈 블롭 제거 (획에 연결되지 않은 작은 점들)
+        # 384×384에서 최소 400px 이상인 연결요소만 보존
+        # (실제 획 성분은 수천~수만px, 노이즈는 수십~수백px)
+        ink_inv = cv2.bitwise_not(opened)  # 잉크=255, 배경=0 (CC 분석용)
+        num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(ink_inv, connectivity=8)
+        
+        filtered = np.full_like(opened, 255)  # 흰 배경으로 시작
+        for lbl in range(1, num_labels):
+            if stats[lbl, cv2.CC_STAT_AREA] >= 400:  # 400px 이상만 보존
+                filtered[labels == lbl] = 0  # 해당 연결요소를 잉크로 복원
+        
+        # Step 7: 256×256으로 최종 저장
+        final_pil = Image.fromarray(filtered).resize((256, 256), Image.LANCZOS)
+        final_np = np.array(final_pil)
+        _, final_img = cv2.threshold(final_np, 127, 255, cv2.THRESH_BINARY)
         
         cv2.imwrite(out_path, final_img)
         
