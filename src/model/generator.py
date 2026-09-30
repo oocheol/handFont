@@ -24,9 +24,25 @@ except ImportError as e:
     print(f"[경고] FontDiffuser 임포트 실패: {e}")
     FontDiffuserDPMPipeline = None
 
-COMMON_2350_HANGUL = (
-    "가각간갇갈갊감갑값갓갔강갖갗같갚갛개객갠갤갬갭갯갰갱갸갹걘걜걤걉걋걍걔걘걜거걱건걷걸걺검겁것겄겅겆겉겊겋게겐겔겜겝겟겠겡겨격견겯결겸겹겻겼경곁계곈곌곕곗고곡곤곧골곪곬곯곰곱곳공곶과곽관괄괆괌괍괏광괘괜괠괨괩괫괭괴괵괸굄굅굇굉교굔굘굠굡굣구국군굳굴굵굶굻굼굽굿궁궂궈궉권궐궎궤궝귀귁귄귈귐귑귓규균귤그극근글긁금급긋긍기긱긴길김깁깃깅깊까깍깐깔깖깜깝깟깠깡깥깨깩깬깰깸깹깻깼깽꺄깩꺼꺽껀껄껌껍껏껑께껜껨껫껭껴껸껼꼈꼍꼐꼬꼭꼰꼴꼼꼽꼿꽁꽂꽃꽈꽉꽐꽘꽥꽹꽤꽨꽬꽵꽷꽹꾀꾄꾐꾑꾕뾔꾸꾹꾼꿀꿇꿈꿉꿋꿍꿔꿩꿰뀄뀌뀐뀔뀜뀝뀨끄끈끌끓끔끕끗끝끼끽낀낄낌낍낏낑나낙난날낡낢남납낫났낭낮낯낱낳내낵낸낼냄냅냇냈냉냐냑냔냥녀녁년녈념념녑녔녕녘녜노녹논놀놂놈놉놋농높놓놔놘놜뇌뇐뇨뇩뇬뇰뇽누눅눈눌눔눕눗눙눠눴뉘뉜뉠뉨뉩뉴뉵뉼늄늉느늑는늘늙늚늠늡늦늪늬늰늴니닉닌닐님닙닛닝닢다닥단닫달닭닮닳담답닷닺닻닿대댁댄댈댐댑댓댔댕댜더덕던덜덞덤덥덧덩덫덮데덱덴델뎀뎁뎃뎄뎅뎌뎐뎔뎠경곁계곈곌곕곗고곡곤곧골곪곬곯곰곱곳공곶과곽관괄괆괌괍괏광괘괜괠괨괩괫괭괴괵괸굄굅굇굉교굔굘굠굡굣구국군굳굴굵굶굻굼굽굿궁궂궈궉권궐궎궤궝귀귁귄귈귐귑귓규균귤그극근글긁금급긋긍기긱긴길김깁깃깅깊까깍깐깔깖깜깝깟깠깡깥깨깩깬깰깸깹깻깼깽꺄깩꺼꺽껀껄껌껍껏껑께껜껨껫껭껴껸껼꼈꼍꼐꼬꼭꼰꼴꼼꼽꼿꽁꽂꽃꽈꽉꽐꽘꽥꽹꽤꽨꽬꽵꽷꽹꾀꾄꾐꾑꾕뾔꾸꾹꾼꿀꿇꿈꿉꿋꿍꿔꿩꿰뀄뀌뀐뀔뀜뀝뀨끄끈끌끓끔끕끗끝끼끽낀낄낌낍낏낑나낙난날낡낢남납낫났낭낮낯낱낳내낵낸낼냄냅냇냈냉냐냑냔냥녀녁년녈념념녑녔녕녘녜노녹논놀놂놈놉놋농높놓놔놘놜뇌뇐뇨뇩뇬뇰뇽누눅눈눌눔눕눗눙눠눴뉘뉜뉠뉨뉩뉴뉵뉼늄늉느늑는늘늙늚늠늡늦늪늬늰늴니닉닌닐님닙닛닝닢다닥단닫달닭닮닳담답닷닺닻닿대댁댄댈댐댑댓댔댕댜더덕던덜덞덤덥덧덩덫덮데덱덴델뎀뎁뎃뎄뎅뎌뎐뎔뎠뎡뎨도독돈돋돌돎돔돕돗동돛돝돠돤돨돼됀됄됌됍됐되된될됨됩됫뵤두둑둔둘둠둡둣둥둬뒀뒤뒨뒬뒴뒵뒷듀듄듈듐륭드득든들듦듬듭듯등디딕딘딜딤딥딧딩딪따딱딴딸땀땁땃땄땅때땍땐땔땜땝땟땠땡떠떡떤떨떪떰떱떳떴떵떼떽뗀뗄뗌뗍뗏뗐뗑뗘뗬또똑똔똘똥똬똔똴뙈뙨뙬뙵뙷뙹뙤뙨뚜뚝뚠뚤뚫뚱뚸뛔뛰뛴뛸뜀뜁뜅뜨뜯뜬뜰뜸뜹뜻띄띈띌띰띱띠띡띤띨띰띱띳띵라락란랄람랍랏랐랑랒랖랗래랙랜랠램랩랫랬랭랴략랸량러럭런럴럼럽럿렀렁렇게레렉렌렐렘렙렛렝려력련렬렴렵렷렸령례롄롈롑롓로록론롤롬롭롯롱롸롼뢔뢰뢴룐료룍룐룔룡루룩룬룰룸룹룻룽뤄뤘뤠뤼뤽륀륄륌륏류륜률륨륭르륵른를름릅릇릉릐리릭린릴림립릿링마막만맏말맑맒맘맙맛망맞맡맣매맥맨맬맴맵맷맸맹먀먁먄먈먕머먹먼멀멂멈멉멋멍멎메멕멘멜멤멥멧멨멩며멱면멸몃몄명몌모목몬몰몲몸몹못몽뫄뫈뫘뫼묀묄묨묍묏묑묘묫무묵문묻물묽묾뭄뭅뭇뭉뭐뭑뭔뭘뭬뮈뮌륄뮌뮤뮨뮬뮴뮹므믁믄믈믐믑믓믕미믹민밀밈밉밋밍및밑바박반받발밝밞밤밥밧방밭배백밴밸뱀뱁뱃뱄뱅뱌뱍뱐뱜뱡뱨버벅번벌벎범법벗벙베벡벤벨벰벱벳벴벵벼벽변별볍볏볐병볘보복본볼봄봅봇봉봐봔봘뵀뵈뵌뵐뵘뵙뵤뵨부북분붇불붉붊붐붑붓붕붜붤붸뷔뷕뷘뷜뷤뷥뷧뷰뷴뷸븀븡브븍븐블븜븝븟븡븨비빅빈빌빔빕빗빙빚빛빠빡빤빨빪빰빱빳빴빵뺘뺙뺜뺨뺭빼빽뺀뺄뺌뺍뺏뺐뺑뺴뻐뻑뻔뻘뻠뻡뻣뻤뻥뻬뻭뻰뻴뻴뻼뻿뼁뼈뼉뼌뼘뼝뼤뽀뽄뽈뽐뽑뽕뽜뽠뽸뾔뿌뿍뿐뿔뿜뿜뿽뿨쀄쀠쀤쀨쀼쁌쁭쁘쁜쁠쁰쁱쁲쁳쁴삔삘삠삡삣삥사삭산살삷삼삽삿샀상삺샅새색샌샐샘샘샙샛샜생샤샥샨샬샴샵샷샹섀섄서석선설섪섬섭섯섰성섶세섹센셀셈셉셋셌셍셔셕션셜셤셥셧셨셩셰셴셸솅소속손솔솖솜솝솟송솥솨솩솬쇄쇈쇠쇤쇨쇰쇱쇳쇼쇽숀숄쇽숍숏숑수숙순숟술숨숩숫숭숯숴쉈쉐쉔쉘쉠쉡쉥쉬쉭쉰쉴쉼쉽쉿슁슈슉슐슘슝스슥슨슬슭슴습슷승시식신실싫심십싯싱싶싸싹싼쌀쌈쌉쌌쌍쌓쌔쌕쌘쌜쌤쌥쌨쌩쌰쌱썅써썩썬썰썲썸썹썻썼썽쎄쎅쎈쎌쎔쎕쎗쎘쎵쎼쏘쏙쏜쏠쏨쏩쏫쏭쏴쏵쐈쐐쐰쐴쐼쐽쐿쑈쑤쑥쑨쑬쑴쑵쑻쑹쒀쒔쒜쒸쒼쓔쓩쓰쓱쓴쓸쓸쓺씀씁쓿씌씐씔씌씨씩씬씰씸씹씻씽아악안앉않알갉앓암압앗았앙앞애액앤앨앰앱앱앳앴앵야약얀얄얇얌얍얏양얕얗얘얜얠어억언얹얻얼얽얾엄업업엇었엉엌엎에엑엔엘엠엡엣엥여역연열엷염엽엿였영옆예옌옐옘옙옛옜오옥온올옭옮옳옴옵옷옹옻와왁완왈왐왑왔왕왜왝왠왬왱외획왼욀욈욉외욋요욕욘욜욤욥욧용우욱운울욹욺움웁웃웅워웍원월웜웝웠웡웨웩웬웰웸웹웽위윅윈윌윔윕윗윙유육윤율윰윱윳융윷으윽은을읆음읍읏응읔읕읖의의이익인일읽잃임입잇있잉잎자작잔잖잘잚잠잡잣잤장잦재잭잰잴잼잽잿쟀쟁쟈쟉쟌쟎쟝걔쟤져적전절젊점접젓졌정젖제젝젠젤젬젭젯젰젱져젹젼졀졈졉졌졍졔조족존졸졺좀좁졿종좌좍좐좠좽죄죈죌죔죕죗죠죡죤죵주죽준줄줆줌줍줏중줘줬줴쥐쥔쥘쥠쥡쥣쥬쥰쥴쥼즈즉즌즐즘즙즛증지직진질짊짐집짓징짖짙짚짜짝짠짤짧짬짭짭짰짱째짹짼짴쨈쨉쨋쨌쨍쨔쨘쨩쩌쩍쩐쩔쩜쩝쩟쪘쩡쩨쩬쩨쪄쪘쪼쪽쫀쫄쫌쫍쫏쫑쫘쫙쫠쫬쫴쬐쬔쬘쬠쬡쬫쭈쭉쭌쭘쭙쭝쭤쭸쮜쮸쯔쯤쯧쯩찌찍찐찔찜찝찡찢찌차착찬찮찰참찹찻찼창찾채책챈챌챔챕챗챘챙챠챡챤챵처척천철첨첩첫첬청체첵첸첼쳄쳅쳇쳈쳉쳐쳔쳤쳥쳬초촉촌촐촘숍촛총촤촨촬최쵠쵤쵬쵭쵯쵸쵼츄츈츌츔츠측츤츨츰츱츳층치칙친칠칡침칩칫칭치카칵칸칼캄캅캇캉캐캑캔캘캠캡캣캤캥캬캭컁커컥컨컬컴컵컷컸컹케켁켄켈켐켑켓켔켕켜켯켰켱켸코콕콘콜콤콥콧콩콰콱콴괄쾀쾅쾌쾐쾬쾽퀴퀵퀸퀼큄큅귓큐균큘크큭큰클큼클큽큿큵키킥킨킬킴킵킷킹타탁탄탈탉탐탑탓탕태택탠탤탬탭탯탰탱탸턍터턱턴털턺텀텁텃텄텅테텍텐텔템텝텟텼텡텨텬텼텽톄토톡톤톨톰톱톳통톼퇀돼퇴툔툘툠투툭툰툴툼툽틋퉁퉈퉜퉤튀튁튄튈튐튑튓튜튠튤튬륭트특튼틀틂틈틉틋틔틘틔티틱틴틸팀팁팃팅파팍판팔팖팜팝팟팠팡패팩팬팰팸팹팻팼팽퍄퍅평퍼퍽펀펄펌펍펏펐펑페펙펜펠펨펩펫펭펴편펼폄펵폈평폐폐포폭폰폴폼폽폿퐁퐈퐘푀푄표푠푝푠표푸푹푼풀풂품풉풋풍풔풨퓌퓔퓨퓬퓰퓸륭프픈플픔픗피픽핀필필핌핍핏핑하학한할핥함합핫항해핵핵핸핼햄햅햇했행햐향허헉헌헐헒험헙헛헝헤헥헨헬헴헵헷헸헹혀혁현혈혐협혓혔형혜혠혤호혹혼홀홂홈홉홋홍화화확환활홤홥왔황홰홱왠홴홽회획회횔횜횝횟효횬횰횸횹후훅훈훌훑훔훕훗훙훠훵훼훽휀휄휨휩휫휘획휜휠휨휩휫휴휵휸휼흄륭흐흑흔흘흙흚흠흡흣흥희흰흰흴흼흽히힉힌힐힘힙힛힝"
-)
+def _build_ks_x_1001_2350():
+    """
+    KS X 1001 (완성형 한글 조합) 표준 2,350자 세트를 EUC-KR 코드포인트
+    범위(0xB0A1-0xC8FE)를 왕복 디코딩하여 프로그램적으로 생성.
+    하드코딩 문자열은 오탈자로 376자 누락 + 124자 오염이 있었음(직접 검증됨).
+    """
+    chars = []
+    for hi in range(0xB0, 0xC9):
+        for lo in range(0xA1, 0xFF):
+            try:
+                ch = bytes([hi, lo]).decode('euc-kr')
+            except (UnicodeDecodeError, ValueError):
+                continue
+            if 0xAC00 <= ord(ch) <= 0xD7A3:
+                chars.append(ch)
+    return "".join(chars)
+
+
+COMMON_2350_HANGUL = _build_ks_x_1001_2350()
 
 def load_fontdiffuser_pipeline(ckpt_dir="weights", device="cuda:0"):
     from configs.fontdiffuser import get_parser
@@ -36,6 +52,12 @@ def load_fontdiffuser_pipeline(ckpt_dir="weights", device="cuda:0"):
     args.ckpt_dir = ckpt_dir
     args.device = device
     args.num_inference_steps = 20  # GPU 가속 기준 고화질 20스텝 고정
+    # 스타일(필체) 유사도 개선: classifier-free guidance_scale를 7.5->3.0으로 낮춤.
+    # 높은 CFG는 content 템플릿(맑은고딕 형태)으로 출력을 끌어당겨 필체 개성을
+    # 지운다. SCR 스타일 임베딩 코사인 A/B(표본 40자)에서 gs7.5=0.0496 ->
+    # gs3.0=0.0620 (+25.0%, src/eval/style_similarity.py)로 실측 확인.
+    # gs2.0(0.0627)은 이득이 미미하고 획 소실 위험만 커져 3.0을 승자로 확정.
+    args.guidance_scale = 3.0
     
     # 튜플로 이미지 사이즈 변환
     style_image_size = args.style_image_size
@@ -116,146 +138,189 @@ def make_content_image(char, font, size=128):
     return result_img.convert('RGB')
 
 
-def build_averaged_style_tensor(style_hints_tensors, device):
-    """
-    논문(CKFont2, DML-Font)의 Multi-Reference 앙상블 방식:
-    여러 스타일 힌트 텐서를 평균 풀링하여 단일 앙상블 스타일 텐서 생성.
-    이를 통해 특정 글자(예: ㅏ)의 획 정보가 유실되는 문제를 방지.
-    """
-    if not style_hints_tensors:
-        raise ValueError("스타일 힌트가 없습니다.")
-    stacked = torch.cat(style_hints_tensors, dim=0)  # [N, C, H, W]
-    averaged = stacked.mean(dim=0, keepdim=True)  # [1, C, H, W]
-    return averaged.to(device)
-
-
 # 한글 자모 인덱스 정의
 CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
 JUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ']
 
-# 중성(모음) 그룹 분류
-# ㅏ계 (오른쪽 가로획): ㅏ(0), ㅑ(2)
-JUNG_A_GROUP = {0, 2}
-# ㅓ계 (왼쪽 가로획): ㅓ(4), ㅕ(6)
-JUNG_EO_GROUP = {4, 6}
-# ㅔ/ㅐ계 (세로2획): ㅐ(1), ㅒ(3), ㅔ(5), ㅖ(7)
-JUNG_E_GROUP = {1, 3, 5, 7}
-# ㅗ계 (위 가로획): ㅗ(8), ㅛ(12)
-JUNG_O_GROUP = {8, 12}
-# ㅜ계 (아래 가로획): ㅜ(13), ㅠ(17)
-JUNG_U_GROUP = {13, 17}
-# 복합모음: ㅘ(9),ㅙ(10),ㅚ(11),ㅝ(14),ㅞ(15),ㅟ(16)
-JUNG_WA_GROUP = {9, 10, 11, 14, 15, 16}
-# ㅡ/ㅢ/ㅣ: ㅡ(18),ㅢ(19),ㅣ(20)
-JUNG_EU_GROUP = {18, 19, 20}
+# 중성(모음) 그룹별 최우선 스타일 힌트.
+# data/style에는 실제로 매/실/효/소/이/새/별/조/영/화 10자만 존재(refine_hints.py 참조).
+# 해당 그룹에 직접 대응하는 힌트가 있으면(예: ㅐ그룹→매/새) 그 자체가 최선의 매치이고,
+# 없는 그룹(ㅏ/ㅓ/ㅜ 등)만 구조가 가장 가까운 힌트로 대체한다.
+JUNG_GROUP_HINTS = [
+    (frozenset({0, 2}),              ['화', '별', '영']),  # ㅏ/ㅑ: 화(ㅘ 안의 ㅏ) 및 별/영(ㅕ 우측 획)로 대체
+    (frozenset({4, 6}),              ['별', '영']),         # ㅓ/ㅕ: 별/영이 직접 ㅕ 힌트
+    (frozenset({1, 3, 5, 7}),        ['매', '새']),         # ㅐ/ㅒ/ㅔ/ㅖ: 매/새가 직접 ㅐ 힌트
+    (frozenset({8, 12}),             ['소', '조', '효']),   # ㅗ/ㅛ: 소/조가 직접 ㅗ, 효가 직접 ㅛ
+    (frozenset({13, 17}),            ['효', '소', '조']),   # ㅜ/ㅠ: 상하 대칭 구조인 효/소로 대체
+    (frozenset({9, 10, 11, 14, 15, 16}), ['화']),           # 복합모음(ㅘ계): 화가 직접 ㅘ 힌트
+    (frozenset({18, 19, 20}),        ['이', '실']),         # ㅡ/ㅢ/ㅣ: 이/실이 직접 ㅣ 힌트
+]
+
+CHO_HINTS = {
+    6: ['매'],                       # ㅁ
+    7: ['별'], 8: ['별'],             # ㅂ, ㅃ
+    9: ['새', '소', '실'], 10: ['새', '소', '실'],  # ㅅ, ㅆ
+    11: ['이', '영'],                # ㅇ
+    12: ['조'], 13: ['조'], 14: ['조'],  # ㅈ, ㅉ, ㅊ
+    18: ['화', '효'],                # ㅎ
+}
+
+FALLBACK_ORDER = ['이', '소', '별', '조', '화', '매', '새', '영', '실', '효']
 
 
-def get_optimal_style_images(char, style_hints):
+def get_best_style_char(char, available_chars):
     """
-    한글 타겟 글자의 초성 및 중성 형태를 분석하여,
-    가장 유사한 구조를 가진 스타일 힌트 이미지들을 우선순위 리스트로 반환.
-    
-    반환: PIL Image 리스트 (최대 3개, 앙상블 대상)
+    타겟 글자의 초성/중성 구조에 가장 가까운 스타일 힌트 글자 1개를 선택.
+
+    이전 버전은 최대 3장을 픽셀 평균해 앙상블했으나, FontDiffuser는 스타일
+    이미지를 style_encoder뿐 아니라 content_encoder에도 그대로 통과시켜
+    "참조 글리프의 구조" 조건으로 함께 사용한다(src/model.py의
+    style_content_res_features). 서로 다른 글자를 픽셀 평균하면 스타일·구조
+    두 경로 모두에 존재하지 않는 프랑켄글리프가 주입되어 획 왜곡의 원인이
+    되므로, 단일 참조 이미지만 사용한다.
     """
-    all_hints = list(style_hints.values())
-    
+    available = set(available_chars)
+
+    if char in available:  # 타겟 글자 자체가 힌트라면 그보다 나은 참조는 없음
+        return char
+
     if not (0xAC00 <= ord(char) <= 0xD7A3):
-        return all_hints[:3] if len(all_hints) >= 3 else all_hints
-        
+        for fb in FALLBACK_ORDER:
+            if fb in available:
+                return fb
+        return next(iter(available))
+
     char_code = ord(char) - 0xAC00
     cho_idx = char_code // 588
     jung_idx = (char_code % 588) // 28
-    jong_idx = char_code % 28
-    
-    primary = []   # 1순위: 가장 중요한 획 구조 매치
-    secondary = [] # 2순위: 보조 스타일 참조
-    
-    # ━━━ 중성(모음) 우선 매핑 ━━━
-    # ㅏ/ㅑ: 오른쪽 가로획이 있는 글자 - '아'가 핵심
-    if jung_idx in JUNG_A_GROUP:
-        if '아' in style_hints: primary.append(style_hints['아'])
-        if '바' in style_hints: primary.append(style_hints['바'])
-        if '가' in style_hints: primary.append(style_hints['가'])
-        if '나' in style_hints: secondary.append(style_hints['나'])
-    
-    # ㅓ/ㅕ: 왼쪽 가로획
-    # '어' 힌트가 없을 경우 '아'로 대체:
-    # ㅏ와 ㅓ는 동일한 [세로획+가로단획] 구조이며, 방향은 Content Image에서 결정됨
-    # '이'(ㅣ 구조)를 primary로 쓰면 가로획 신호가 완전히 소실되므로 반드시 '아' 사용
-    elif jung_idx in JUNG_EO_GROUP:
-        if '어' in style_hints: primary.append(style_hints['어'])
-        if '아' in style_hints: primary.append(style_hints['아'])   # ㅓ ≈ 미러된 ㅏ 구조
-        if '화' in style_hints: secondary.append(style_hints['화']) # ㅘ도 ㅏ 성분 포함
-    
-    # ㅐ/ㅔ 계열: 세로 2획 구조
-    elif jung_idx in JUNG_E_GROUP:
-        if '새' in style_hints: primary.append(style_hints['새'])
-        if '매' in style_hints: primary.append(style_hints['매'])
-        if '세' in style_hints: primary.append(style_hints['세'])
-        if '이' in style_hints: secondary.append(style_hints['이'])
-    
-    # ㅗ/ㅛ: 위 가로획
-    elif jung_idx in JUNG_O_GROUP:
-        if '소' in style_hints: primary.append(style_hints['소'])
-        if '조' in style_hints: secondary.append(style_hints['조'])
-    
-    # ㅜ/ㅠ: 아래 가로획
-    elif jung_idx in JUNG_U_GROUP:
-        if '화' in style_hints: primary.append(style_hints['화'])
-        if '소' in style_hints: secondary.append(style_hints['소'])
-    
-    # 복합모음 ㅘ/ㅝ 등
-    elif jung_idx in JUNG_WA_GROUP:
-        if '화' in style_hints: primary.append(style_hints['화'])
-        if '아' in style_hints: secondary.append(style_hints['아'])
-        if '소' in style_hints: secondary.append(style_hints['소'])
-    
-    # ㅡ/ㅢ/ㅣ
-    elif jung_idx in JUNG_EU_GROUP:
-        if '이' in style_hints: primary.append(style_hints['이'])
-        if '영' in style_hints: secondary.append(style_hints['영'])
-    
-    # ━━━ 초성(자음) 보조 매핑 ━━━
-    if cho_idx == 18:  # ㅎ
-        if '화' in style_hints and style_hints['화'] not in primary:
-            secondary.append(style_hints['화'])
-    elif cho_idx in [12, 13, 14]:  # ㅈ, ㅉ, ㅊ
-        if '조' in style_hints and style_hints['조'] not in primary:
-            secondary.append(style_hints['조'])
-    elif cho_idx == 6:  # ㅁ
-        if '매' in style_hints and style_hints['매'] not in primary:
-            secondary.append(style_hints['매'])
-    elif cho_idx in [7, 8]:  # ㅂ, ㅃ
-        if '별' in style_hints and style_hints['별'] not in primary:
-            secondary.append(style_hints['별'])
-    elif cho_idx in [9, 10]:  # ㅅ, ㅆ
-        if '새' in style_hints and style_hints['새'] not in primary:
-            secondary.append(style_hints['새'])
-    
-    # 리스트 조합: primary 우선, secondary 보충, 나머지 기본값으로 채우기
-    result = primary[:2] + secondary[:1]
-    
-    # 부족하면 전체 힌트에서 보충
-    if len(result) < 2:
-        fallback_order = ['아', '이', '새', '매', '소', '영', '별', '조', '화']
-        for fb in fallback_order:
-            if fb in style_hints and style_hints[fb] not in result:
-                result.append(style_hints[fb])
-            if len(result) >= 2:
-                break
-    
-    return result[:3]  # 최대 3개
+
+    candidates = []
+    for group, hints in JUNG_GROUP_HINTS:
+        if jung_idx in group:
+            candidates.extend(hints)
+            break
+    candidates.extend(CHO_HINTS.get(cho_idx, []))
+    candidates.extend(FALLBACK_ORDER)
+
+    for c in candidates:
+        if c in available:
+            return c
+    return next(iter(available))
+
+
+def postprocess_glyph(gray_np, out_size=256):
+    """
+    디퓨전 raw 그레이스케일 출력(밝을수록 배경, 어두울수록 잉크)을 최종
+    흑백 글리프 PNG로 정리.
+
+    이전 버전의 결함들을 수정:
+    1. 고정 threshold(175)는 글자마다 다른 잉크 농도를 무시해 획이 옅은 글자를
+       통째로 날려버렸다(예: '나'가 완전히 빈 이미지로 저장됨) → 글자별 Otsu
+       적응형 threshold로 교체.
+    2. 방향별 morphological closing이 배경(255)이 다수인 극성 그대로
+       적용되고 있었다. MORPH_CLOSE는 흰 영역(255)을 확장했다가 축소하는
+       연산이므로, 배경이 255인 이미지에 그대로 적용하면 얇은 잉크(0) 획을
+       깎아 오히려 끊어버린다('가'의 ㄱ이 두 조각으로 갈라지는 원인이었음).
+       → 잉크를 255로 반전한 뒤 closing을 적용해야 획을 "잇는" 본래 의도대로
+       동작한다.
+    3. Connected-Component 노이즈 필터가 고정 400px였는데, 글자마다 총
+       잉크량이 다르므로(예: 획이 적은 'ㅣ' 등) 상대 비율 기준으로 교체.
+    4. (2026-07 발견) 96px 그레이스케일을 먼저 BICUBIC 업스케일 후 블러+threshold
+       하던 순서가 근접한 두 세로획 사이의 좁은 갭을 블러로 뭉개 가짜 연결
+       다리를 만들었다 ('에'=ㅇ+ㅔ에서 ㅓ와 ㅣ 사이에 없어야 할 가로선이 생기던
+       원인 — ㅐ/ㅒ/ㅔ/ㅖ 계열 371자 전체에 영향). 96px 원본은 두 획이 명확히
+       분리되어 있음을 실측 확인 → **원본 해상도에서 먼저 이진화**한 뒤 그
+       이진 마스크를 업스케일하도록 순서를 바꿈. LANCZOS4는 이미 확정된 형태를
+       리샘플링만 하므로 색 공간에서 갭을 침범하는 블러가 없다.
+    """
+    # Step 1: 96px 원본 해상도에서 먼저 Otsu 적응형 threshold
+    # (업스케일 전에 이진화해야 근접한 두 획 사이 갭이 블러로 뭉개지지 않는다)
+    otsu_val, binary96 = cv2.threshold(gray_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    # 폴백: 디퓨전 출력이 전체적으로 옅으면 Otsu가 획 대부분을 배경으로
+    # 분류해 글자가 통째로 소실되는 케이스가 있음(예: '나' 잉크 0.65%).
+    # 잉크 비율이 비정상적으로 낮으면 threshold를 점진 상향해 재시도.
+    min_ink_ratio = 0.015
+    tval = otsu_val
+    while (binary96 == 0).mean() < min_ink_ratio and tval < 245:
+        tval = min(245, tval + 15)
+        _, binary96 = cv2.threshold(gray_np, tval, 255, cv2.THRESH_BINARY)
+
+    # Step 2: 이미 이진화된 마스크를 4배 업스케일 (96→384). 색 공간 블러가
+    # 아니라 형태 리샘플링이므로 갭을 침범하지 않는다.
+    ink_up = cv2.resize(cv2.bitwise_not(binary96), (384, 384), interpolation=cv2.INTER_LANCZOS4)
+    _, ink = cv2.threshold(ink_up, 127, 255, cv2.THRESH_BINARY)
+
+    # Step 3: 방향별 closing으로 실제 끊긴 획만 보수 (ink=255 기준)
+    vk = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 5))
+    hk = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 1))
+    ek = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    closed_v = cv2.morphologyEx(ink, cv2.MORPH_CLOSE, vk)
+    closed_h = cv2.morphologyEx(ink, cv2.MORPH_CLOSE, hk)
+    closed_e = cv2.morphologyEx(ink, cv2.MORPH_CLOSE, ek)
+    # union: 어느 방향이든 이어붙인 획은 보존 (ink=255 기준이므로 OR)
+    combined = cv2.bitwise_or(closed_v, closed_h)
+    combined = cv2.bitwise_or(combined, closed_e)
+
+    # Step 4: 작은 opening으로 잔여 노이즈 점만 제거 (얇은 획 보존 위해 3x3)
+    ok = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    opened = cv2.morphologyEx(combined, cv2.MORPH_OPEN, ok)
+
+    # Step 5: CC 크기 필터 - 글자별 총 잉크량에 비례한 상대 기준
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(opened, connectivity=8)
+    if num_labels <= 1:
+        filtered = opened
+    else:
+        total_ink = stats[1:, cv2.CC_STAT_AREA].sum()
+        min_area = max(20, total_ink * 0.004)  # 전체 잉크의 0.4% 미만 or 20px 미만은 노이즈
+        filtered = np.zeros_like(opened)
+        for lbl in range(1, num_labels):
+            if stats[lbl, cv2.CC_STAT_AREA] >= min_area:
+                filtered[labels == lbl] = 255
+
+    # 표준 컨벤션(흰 배경/검은 잉크)으로 반전 복귀
+    result = cv2.bitwise_not(filtered)
+
+    # Step 6: 최종 크기로 리사이즈 + 재이진화
+    final_pil = Image.fromarray(result).resize((out_size, out_size), Image.LANCZOS)
+    final_np = np.array(final_pil)
+    _, final_img = cv2.threshold(final_np, 127, 255, cv2.THRESH_BINARY)
+
+    # Step 7: 윤곽 평활화 - 획 끝 스퍼(spur)·너덜거림 정리 (blur→재이진화 2회,
+    # 구조는 보존하고 윤곽만 둥글게). "획 끝이 날림처리됨" 피드백으로 추가.
+    for _ in range(2):
+        final_img = cv2.GaussianBlur(final_img, (7, 7), 2.0)
+        _, final_img = cv2.threshold(final_img, 127, 255, cv2.THRESH_BINARY)
+    return final_img
+
+
+def generate_grayscale_glyph(pipe, **kwargs):
+    """Support both upstream PIL output and the local float-tensor extension."""
+    try:
+        raw = pipe.generate(**kwargs, return_tensor=True)
+    except TypeError as error:
+        # A clean upstream checkout does not provide the return_tensor option.
+        # Propagate unrelated generation errors rather than masking them.
+        if "unexpected keyword argument 'return_tensor'" not in str(error):
+            raise
+        images = pipe.generate(**kwargs)
+        return np.asarray(images[0].convert('L'), dtype=np.uint8)
+
+    gray = raw[0, 0] * 0.299 + raw[0, 1] * 0.587 + raw[0, 2] * 0.114
+    return (gray.detach().cpu().numpy() * 255).astype(np.uint8)
 
 
 def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_dir="output/images", device="cuda:0"):
     """
-    FontDiffuser weights 4종 + Multi-Reference Style Averaging 앙상블로
+    FontDiffuser weights 4종 + 구조 매칭 기반 단일 참조 스타일로
     2,350자 한글 손글씨 폰트를 생성합니다.
-    
+
     개선사항:
-    - Multi-Reference Style Averaging: 최대 3장의 스타일 힌트를 평균 임베딩으로 앙상블
+    - 단일 최적 참조 스타일 선택: get_best_style_char로 픽셀/임베딩 평균 없이
+      구조가 가장 가까운 힌트 1장만 사용 (프랑켄글리프 방지)
     - Content Image 품질 개선: FontDiffuser 원본 ttf2im과 동일한 방식 사용
-    - 모음별 최적 스타일 매핑: ㅏ계/ㅓ계/ㅔ계/ㅗ계/ㅜ계/복합 각각 독립 매핑
+    - 적응형 후처리: postprocess_glyph (Otsu 적응형 threshold + 올바른 극성의
+      closing + 상대적 노이즈 필터)
     """
     print("[AI 작동] FontDiffuser 딥러닝 디퓨전 추론 가동 시작...")
     
@@ -315,44 +380,23 @@ def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_d
     
     total = len(COMMON_2350_HANGUL)
     print(f" -> 총 {total}자의 한글에 대해 AI 디퓨전 획 생성을 개시합니다.")
-    print(f"    [방식] Multi-Reference Style Averaging 앙상블 적용")
-    
+    print(f"    [방식] 구조 매칭 기반 단일 참조 스타일 선택 (픽셀 평균 앙상블 제거)")
+
     for idx, char in enumerate(COMMON_2350_HANGUL):
         char_hex = f"{ord(char):04X}"
         out_path = os.path.join(output_dir, f"{char_hex}.png")
-        
+
         # Content Image: FontDiffuser 원본 방식으로 생성 (정밀 중앙 정렬)
         c_img = make_content_image(char, font, size=128)
         content_tensor = content_transforms(c_img)[None, :].to(device)
-        
-        # Multi-Reference Style Averaging: 최적 스타일 힌트 앙상블
-        optimal_style_imgs = get_optimal_style_images(char, style_hints)
-        
-        # 각 스타일 이미지를 텐서로 변환 후 평균 풀링
-        style_tensors = []
-        for simg in optimal_style_imgs:
-            # 캐시에서 찾기 (이미 변환된 경우)
-            cached_char = None
-            for k, v in style_hints.items():
-                if v is simg:
-                    cached_char = k
-                    break
-            
-            if cached_char and cached_char in style_tensor_cache:
-                style_tensors.append(style_tensor_cache[cached_char])
-            else:
-                style_tensors.append(style_transforms(simg)[None, :].to(device))
-        
-        if len(style_tensors) > 1:
-            # 여러 스타일 텐서의 평균 앙상블
-            stacked = torch.cat(style_tensors, dim=0)  # [N, C, H, W]
-            style_tensor = stacked.mean(dim=0, keepdim=True)  # [1, C, H, W]
-        else:
-            style_tensor = style_tensors[0]
-        
+
+        # 구조가 가장 가까운 단일 스타일 힌트 선택
+        best_char = get_best_style_char(char, style_hints.keys())
+        style_tensor = style_tensor_cache[best_char]
+
         # raw float tensor 직접 수신 [1, 3, 96, 96] 형태
         with torch.no_grad():
-            raw_tensor = pipe.generate(
+            gray_np = generate_grayscale_glyph(pipe,
                 content_images=content_tensor,
                 style_images=style_tensor,
                 batch_size=1,
@@ -361,66 +405,12 @@ def run_real_fontdiffuser_inference(pipe, args, style_dir="data/style", output_d
                 content_encoder_downsample_size=args.content_encoder_downsample_size,
                 t_start=args.t_start,
                 t_end=args.t_end,
-                dm_size=args.content_image_size,
-                return_tensor=True  # float tensor 직접 반환
+                dm_size=args.content_image_size
             )
-        
-        # ━━━ 고품질 후처리 파이프라인 ━━━
+
         # raw tensor: [1, 3, H, W] float32 on GPU, 값 범위 [0, 1]
         # 그레이스케일 변환 (R*0.299 + G*0.587 + B*0.114)
-        gray_tensor = (raw_tensor[0, 0] * 0.299 +
-                       raw_tensor[0, 1] * 0.587 +
-                       raw_tensor[0, 2] * 0.114)  # [H, W]
-        gray_np = (gray_tensor.cpu().numpy() * 255).astype(np.uint8)
-        
-        # Step 1: 4배 upscale (96→384) - float에서 upscale하므로 계단 없음
-        gray_pil = Image.fromarray(gray_np)
-        upscaled_pil = gray_pil.resize((384, 384), Image.BICUBIC)
-        upscaled = np.array(upscaled_pil)
-        
-        # Step 2: 획 경계 부드럽게
-        blurred = cv2.GaussianBlur(upscaled, (5, 5), 1.2)
-        
-        # Step 3: 엄격한 threshold (분포 분석 기반)
-        # 순수 코어 획: < 150 (3.8%)  현재220: 5.4% (42% 과잉)
-        # 175로 설정: 코어 + 최소 엣지만 캡처, 배경 노이즈 헤일로 제외
-        _, binary = cv2.threshold(blurred, 175, 255, cv2.THRESH_BINARY)
-        
-        # Step 4: 방향별 Closing - 축소된 5px 커널 사용
-        # (기존 9px: 노이즈를 주획과 연결시킴 → 5px: 실제 단절만 브리징)
-        vk = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 5))
-        closed_v = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, vk)
-        
-        hk = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 1))
-        closed_h = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, hk)
-        
-        ek = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-        closed_e = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, ek)
-        
-        # union: 어느 방향이든 연결된 획 보존 (0=ink 인코딩에서 AND=union)
-        combined = cv2.bitwise_and(closed_v, closed_h)
-        combined = cv2.bitwise_and(combined, closed_e)
-        
-        # Step 5: 큰 Opening으로 잔여 노이즈 점 제거
-        ok = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
-        opened = cv2.morphologyEx(combined, cv2.MORPH_OPEN, ok)
-        
-        # Step 6: Connected Component 크기 필터링
-        # 고립된 소형 노이즈 블롭 제거 (획에 연결되지 않은 작은 점들)
-        # 384×384에서 최소 400px 이상인 연결요소만 보존
-        # (실제 획 성분은 수천~수만px, 노이즈는 수십~수백px)
-        ink_inv = cv2.bitwise_not(opened)  # 잉크=255, 배경=0 (CC 분석용)
-        num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(ink_inv, connectivity=8)
-        
-        filtered = np.full_like(opened, 255)  # 흰 배경으로 시작
-        for lbl in range(1, num_labels):
-            if stats[lbl, cv2.CC_STAT_AREA] >= 400:  # 400px 이상만 보존
-                filtered[labels == lbl] = 0  # 해당 연결요소를 잉크로 복원
-        
-        # Step 7: 256×256으로 최종 저장
-        final_pil = Image.fromarray(filtered).resize((256, 256), Image.LANCZOS)
-        final_np = np.array(final_pil)
-        _, final_img = cv2.threshold(final_np, 127, 255, cv2.THRESH_BINARY)
+        final_img = postprocess_glyph(gray_np)
         
         cv2.imwrite(out_path, final_img)
         

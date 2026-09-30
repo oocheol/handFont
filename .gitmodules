@@ -1,0 +1,3 @@
+[submodule "src/model/fontdiffuser"]
+	path = src/model/fontdiffuser
+	url = https://github.com/yeungchenwa/FontDiffuser.git
